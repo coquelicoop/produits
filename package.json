@@ -17,8 +17,8 @@
     "csv-parser": "^2.3.2",
     "csv-writer": "^1.6.0",
     "electron-rebuild": "^1.0.0",
-    "jayson": "^1.2.1",
     "jimp": "^0.9.3",
+    "odoo": "file:c:/git/odoo-0.4.1.tgz",
     "quasar": "^1.8.5"
   },
   "devDependencies": {

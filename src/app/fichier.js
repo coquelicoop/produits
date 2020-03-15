@@ -52,7 +52,7 @@ const modelesPath = path.join(dir, 'modèles')
 const articlesPath = path.join(dir, 'articles.csv')
 
 // categories d'articles acceptées. Par défaut celles de La Cagette
-const categories = config.categories || ['F', 'L', 'V', 'A']
+// const categories = config.categories || ['F', 'L', 'V', 'A']
 
 // nombre maximal de fichiers gardés en archives
 const maxArch = config.nbMaxArchives ? config.nbMaxArchives : 10
@@ -416,7 +416,7 @@ export async function maj (data, col, val, simple) {
             return ''
         }
         case 'categorie' : {
-            if (!val || categories.indexOf(val) === -1) return 'catégorie absente ou pas dans la liste des catégories reconnues'
+            // if (!val || categories.indexOf(val) === -1) return 'catégorie absente ou pas dans la liste des catégories reconnues'
             data.categorie = val
             return ''
         }

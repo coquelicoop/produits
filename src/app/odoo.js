@@ -1,13 +1,14 @@
 /* eslint-disable */
 // Ajouté pour coquelicoop : lignes 17, 34 , 71. Source index.js de https://github.com/saidimu/odoo
 'use strict';
+import { remote } from 'electron'
 
-var assert = require('assert');
+var assert = remote.require('assert');
 
-var http = require('http')
-var jayson = require('jayson')
+var http = remote.require('http')
+var jayson = remote.require('jayson')
 
-var Odoo = function (config) {
+export const Odoo = function (config) {
   config = config || {};
 
   this.host = config.host;
@@ -220,5 +221,3 @@ Odoo.prototype._request = function (path, params, callback) {
     return callback(null, res);
   });
 };
-
-module.exports = Odoo;

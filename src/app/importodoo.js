@@ -20,7 +20,8 @@ En configuration :
 
 import { remote } from 'electron'
 
-const Odoo = remote.require('./odoo')
+const Odoo = remote.require('odoo')
+// import { Odoo } from './odoo'
 import { config } from './config'
 
 const minCB = config.minCB
@@ -44,7 +45,7 @@ const odoo = new Odoo({
 
 function codeDeId(x) {
     let i = x.indexOf(',')
-    return i == -1 ? x : x.substring(i + 1)
+    return i === -1 ? x : x.substring(i + 1)
 }
 
 export function getArticles () {
