@@ -1,22 +1,35 @@
+<!--
+Affichage complètement passif d'un article.<template>
+Seul élément dynamique : l'affichage des erreurs quand on clique sur lechip "erreurs"
+-->
 <template>
 <div style="position:relative">
+  <!-- chip indiquant la présence d'erreurs sur l'article -->
   <div v-if="article.erreurs.length" class="chip" @click.stop="erreurs = true">
     <q-chip dense>
         <q-avatar color="negative" text-color="white">{{ article.erreurs.length }}</q-avatar>{{ article.erreurs.length == 1 ? 'erreur' : 'erreurs'}}
     </q-chip>
   </div>
+
   <div class="carteArticle shadow-5 row no-wrap justify-start items-center q-gutter-xs">
+    <!-- image ou zone grise exactement de même taille -->
     <div class="col-auto">
       <img v-if="article.image.length !== 0" class="image" :src="'data:image/jpeg;base64,' + article.image">
       <div v-else class="image  bg-grey-4"></div>
     </div>
+
+    <!-- colonne du code court, du code barre, de la catégorie et de son statut d'édition -->
     <div class="col-auto column items-start droite">
       <div class="col-auto prix">{{ article.id }} - [{{ article.codeCourt }}]</div>
       <div class="col-auto prix">{{ article['code-barre'] }}</div>
       <div class="col-auto prix">{{ article.categorie }}</div>
       <div v-if="article.status !== 0" class="col-auto prix rouge">{{ libstat() }}</div>
     </div>
+
+    <!-- colonne du nom du produit -->
     <div class="col nomproduit">{{ article.nom }}</div>
+
+    <!-- colonne du prix, du pods par pièce et de l'icône BIO -->
     <div class="col-auto column items-start droite">
       <div class="col-auto prix" v-if="article.poidsPiece === -1">{{ article.prix }}€ le Kg</div>
       <div class="col-auto prix" v-else>{{ article.prix }}€ piéce</div>
@@ -25,6 +38,7 @@
     </div>
   </div>
 
+  <!-- Dialogue affichant les erreurs sur l'article -->
   <q-dialog v-model="erreurs">
     <q-card>
       <q-card-section>
@@ -51,6 +65,7 @@ export default {
     }
   },
   methods: {
+    // libellé du statut de l'article
     libstat () {
       let s = this.article.status
       return s === 1 ? 'CREE' : (s === 2 ? 'MODIFIE' : (s === 3 ? 'SUPPR.' : 'CR/SUPPR'))

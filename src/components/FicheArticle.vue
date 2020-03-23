@@ -57,10 +57,7 @@
           </template>
         </q-input>
 
-        <div class="q-gutter-sm shadow-5 input1">
-          <div>Catégorie</div>
-          <q-radio v-for="c in categories" :key="c" :val="c" :label="c" v-model="data.categorie"/>
-        </div>
+        <q-select class="q-gutter-sm shadow-5 input1" v-model="data.categorie" :options="categs" label="Catégorie" />
 
         <div class="q-gutter-sm shadow-5 input1">
           <q-radio v-model="data.unite" val="kg" label="au Kg" />
@@ -152,11 +149,18 @@ export default {
   name: 'FicheArticle',
   mounted() {
     global.ficheArticle = this
+    const categories = config.categories || { 'défaut': 'A' }
+    // eslint-disable-next-line no-unused-vars
+    this.categs = []
+    for (let c in categories) {
+      let x = categories[c]
+      if (this.categs.indexOf(x) === -1) this.categs.push(x)
+    }
   },
   data () {
     return {
       labelStatus: ['inchangé', 'créé', 'modifié', 'supprimé', 'créé puis supprimé'],
-      categories: config.categories || ['F', 'L', 'V', 'A'],
+      categs: [],
       fichier: null,
       max: 0,
       ficheArticle: false,

@@ -51,8 +51,15 @@ const modelesPath = path.join(dir, 'modèles')
 // nom du fichier de référence articles.csv mis à disposition des balances
 const articlesPath = path.join(dir, 'articles.csv')
 
-// categories d'articles acceptées. Par défaut celles de La Cagette
-// const categories = config.categories || ['F', 'L', 'V', 'A']
+/*
+Categories d'articles acceptées. Remplacées par celle indiquée dans la map. Si non trouvée:
+- ignorées si 'défaut':''
+- remplacée si 'défaut': 'autre catégorie'
+*/
+const categories = config.categories || { 'défaut': 'A' }
+function transcodeCategorie (c) {
+    return categories[c] || categories['défaut']
+}
 
 // nombre maximal de fichiers gardés en archives
 const maxArch = config.nbMaxArchives ? config.nbMaxArchives : 10
@@ -278,7 +285,11 @@ export class Fichier {
                     data.n = n
                     data.status = 0
                     this.articlesI.push(clone(data))
-                    this.articles.push(data)
+                    let c = transcodeCategorie(data.categorie)
+                    if (c) { // on ignore les articles n'ayant pas de catégprie acceptées
+                        data.categorie = c
+                        this.articles.push(data)
+                    }
                 })
                 .on('end', async () => {
                     /*
@@ -416,7 +427,6 @@ export async function maj (data, col, val, simple) {
             return ''
         }
         case 'categorie' : {
-            // if (!val || categories.indexOf(val) === -1) return 'catégorie absente ou pas dans la liste des catégories reconnues'
             data.categorie = val
             return ''
         }
@@ -429,6 +439,12 @@ export async function maj (data, col, val, simple) {
             S'il vient déjà d'une image par l'éditeur c'est inutile et coûteux.
             C'est me dule Jimp qui permet d'obtenir l'image (qu'on ne garde pas d'ailleurs)
             */
+            if (!val) {
+                data.image = ''
+                data.imagel = 0
+                data.imageh = 0
+                return ''
+            }
             let buffer
             try {
                 buffer = Buffer.from(val, 'base64')

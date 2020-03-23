@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=produits
+Type=Application
+Exec=/home/daniel/git/produits/dist/electron/produits-linux-x64/produits
+Terminal=false
+Icon=/home/daniel/git/produits/tomate.png
+NoDisplay=false
+Categories=Development;IDE;
+Name[fr_FR]=produits.desktop
