@@ -16,7 +16,7 @@ Tout ceci selon le statut d'édition de l'article.
   <q-dialog v-model="ficheArticle" full-width persistent>
   <q-layout view="Lhh lpR fff" container class="bg-white">
     <q-header class="bg-grey-9 column">
-      <!-- Toolbar toujours visible en haut : permet de naviguer à l'article suivant / précédent, 
+      <!-- Toolbar toujours visible en haut : permet de naviguer à l'article suivant / précédent,
       de valider les modifications en cours et de fermer le dialogue-->
       <q-toolbar class="col-auto q-py-md">
         <q-btn :disable="pos === 0" round color="primary" icon="skip_previous" @click="precedent()"/>
@@ -149,7 +149,7 @@ Tout ceci selon le statut d'édition de l'article.
     </q-card>
   </q-dialog>
 
-  <!-- Dialogue invoqué en cas de sortie de l'édition (par exemple passage au précédent / suivant) et que l'article a des erreurs. 
+  <!-- Dialogue invoqué en cas de sortie de l'édition (par exemple passage au précédent / suivant) et que l'article a des erreurs.
   Les laisser ou rester sur l'article pour le corriger -->
   <q-dialog v-model="fermerqm" persistent>
     <q-card>

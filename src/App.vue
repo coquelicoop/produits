@@ -1,78 +1,93 @@
+<!--
+App.vue a la strucyure suivante :
+- Une entête,
+- un panneau à gauche : version de l'application et option de quitter
+- un panneau droite ; gestion des fichiers et import depuis Odoo
+- la zone centrale qui affiche les articles correspondants au filtre souhaité.
+- une barre de statut en bas.
+-->
+
 <template>
    <q-layout id="q-app" view="hHh lpR fFf" class="text-grey-3 bg-green-10">
+    <!-- Entête -->
     <q-header elevated>
       <q-toolbar class="row q-py-md bg-black text-white">
-        <q-btn :size="standardBtnSize" flat round @click="panneauGauche = true" icon="menu" color="grey-2" aria-label="Menu"/>
-        <q-toolbar-title>
-          Mise à jour des articles sur les balances
-        </q-toolbar-title>
-        <q-btn :size="standardBtnSize" flat @click="panneauFichiers()" icon="folder_open" label="Fichiers" color="grey-2" aria-label="Menu"/>
+        <!-- Menu général, panneau gauche -->
+        <q-btn :size="standardBtnSize" flat round @click="ouvrirMenu()" icon="menu" color="grey-2" aria-label="Menu"/>
+        <q-toolbar-title v-if="fichier">{{ fichier.label  }}</q-toolbar-title>
+        <q-toolbar-title v-else>(Choisir un fichier à visualiser)</q-toolbar-title>
+        <q-btn v-if="fichier" class="q-mx-xs" :size="standardBtnSize" color="primary" text-color="white" @click="ajouterArticle()" icon="add_circle">Ajouter<br>un article</q-btn>
+        <q-btn v-if="fichier" class="q-mx-xs" :size="standardBtnSize" color="white" text-color="blue-10" @click="enreg = true" icon="check_circle">Enregistrer<br>comme modèle</q-btn>
+        <q-btn v-if="fichier" class="q-mx-xs" :size="standardBtnSize" color="white" text-color="blue-10" @click="envoyer()" icon="send">Mettre<br>en service</q-btn>
+        <!-- on ne peut détruire qu'un modèle, pas une archive ou un nouveau fichier ou un l'image chargée de ODOO -->
+        <q-btn v-if="fichier && !fichier.nom.startsWith('$') && !fichier.arch" class="q-mx-xs" :size="standardBtnSize" color="negative" text-color="white" @click="detruiremodele = true" icon="delete">Supprimer<br>ce modèle</q-btn>
       </q-toolbar>
-      <q-toolbar v-if="fichier" class="col row q-py-sm bg-blue-10 text-white">
-        <q-toolbar-title>{{ fichier.label  }}</q-toolbar-title>
-        <q-btn class="q-mx-xs" :size="standardBtnSize" color="primary" text-color="white" @click="ajouterArticle()" icon="add_circle">Ajouter<br>un article</q-btn>
-        <q-btn class="q-mx-xs" :size="standardBtnSize" color="white" text-color="blue-10" @click="enreg = true" icon="check_circle">Enregistrer<br>comme modèle</q-btn>
-        <q-btn class="q-mx-xs" :size="standardBtnSize" color="white" text-color="blue-10" @click="envoyer()" icon="send">Envoyer<br>aux balances</q-btn>
-        <q-btn v-if="fichier && fichier.nom && !fichier.arch" class="q-mx-xs" :size="standardBtnSize" color="negative" text-color="white" @click="detruiremodele = true" icon="delete">Supprimer<br>ce modèle</q-btn>
-      </q-toolbar>
+      <!-- Critères de filtre et de tri -->
       <div v-if="fichier" class="col row justify-center items-center q-gutter-md q-pa-sm bg-grey-9">
+        <!-- Critères de tri prédéfinis -->
         <q-select style="min-width:10rem" color="black" bg-color="grey-1" filled bottom-slots v-model="tri" :options="optionsTri" label="Critère de tri" dense options-dense >
           <template v-slot:prepend>
             <q-icon name="sort" @click.stop />
           </template>
         </q-select>
+        <!-- Critères de sélections prédéfinis -->
         <q-select style="min-width:25rem" color="black" bg-color="grey-1" filled bottom-slots v-model="filtre" :options="optionsFiltre" label="Critère de filtre" dense options-dense >
           <template v-slot:prepend>
             <q-icon name="filter_list" @click.stop />
           </template>
         </q-select>
+        <!-- Paramètre du tri, selon le critère choisi -->
         <q-input style="min-width:6rem;position:relative;top:-0.9rem" color="black" bg-color="grey-1" dense filled v-model="argFiltre" label="argument ..."/>
       </div>
     </q-header>
 
+    <!-- Menu gauche -->
     <q-drawer v-model="panneauGauche" elevated overlay :width="500" bordered content-dense>
+      <!-- Le bouton fermer n'est pas visible quand le panneau est fermé -->
       <q-btn v-if="panneauGauche" class="btnfermer btnfermerg" @click="panneauGauche = false" :size="standardBtnSize" round unelevated color="accent" icon="chevron_left"/>
-      <q-list>
-        <q-item>
-          <div class="text-h6 bold">Version de l'application : {{ version }}</div>
-        </q-item>
-        <q-separator />
-        <q-item clickable class="bg-grey-1" v-ripple @click="exitApp = true">
-          <q-item-section avatar><q-icon class="menuButton negative" :name="'exit_to_app'"/></q-item-section>
-          <q-item-section class="menuText negative">Quitter l'application</q-item-section>
-        </q-item>
-      </q-list>
-    </q-drawer>
-
-    <q-drawer v-model="panneauDroit" side="right" elevated overlay :width="400" bordered content-dense>
-     <q-btn  v-if="panneauDroit" class="btnfermer btnfermerd" @click="panneauDroit = false" :size="standardBtnSize" round unelevated color="accent" icon="chevron_right"/>
-      <q-scroll-area class="fit">
+      <!-- Le menu comporte deux listes qui pourraient faire qu'il ne soit pas entièrement visible -->
+      <q-scroll-area class="fit text-black">
         <q-list>
+          <!-- La version de l'application n'est pas pertinente en test (c'est celle de Quasar qui s'affiche dans ce cas) mais est coorecte en production -->
+          <q-item>
+            <div class="text-h6 bold">Version de l'application : {{ version }}</div>
+          </q-item>
+          <q-item clickable class="bg-grey-1" v-ripple @click="exitApp = true">
+            <q-item-section avatar><q-icon class="menuButton negative" :name="'exit_to_app'"/></q-item-section>
+            <q-item-section class="menuText negative">Quitter l'application</q-item-section>
+          </q-item>
+          <q-separator />
+          <!-- Ouverture du fichier actuellement en service -->
           <q-item clickable class="bg-grey-1" v-ripple @click="ouvrirFichier()">
             <q-item-section avatar><q-icon class="menuButton" :name="'today'"/></q-item-section>
-            <q-item-section class="menuText primary">En service sur les balances</q-item-section>
+            <q-item-section class="menuText primary">En service actuellement</q-item-section>
           </q-item>
-         <q-item clickable class="bg-grey-1" v-ripple @click="panneauDroit = false;ouvrirODOO()">
+          <!-- Création d'un nouveau fichier chargé des produits importés depuis ODOO -->
+          <q-item clickable class="bg-grey-1" v-ripple @click="panneauGauche = false;ouvrirODOO()">
             <q-item-section avatar><q-icon class="menuButton" :name="'cloud_download'"/></q-item-section>
-            <q-item-section class="menuText">Importation depuis ODOO</q-item-section>
+            <q-item-section class="menuText">Importer depuis ODOO</q-item-section>
           </q-item>
-         <q-item clickable class="bg-grey-1" v-ripple @click="fichierlocal = true;fichierImport = null;panneauDroit = false">
+          <!-- Importation d'un fichier CSV local dont le nom sera pris comme nom de modèle-->
+          <q-item clickable class="bg-grey-1" v-ripple @click="fichierlocal = true;fichierImport = null;panneauGauche = false">
             <q-item-section avatar><q-icon class="menuButton" :name="'add_box'"/></q-item-section>
             <q-item-section class="menuText">Importer un fichier local comme modèle</q-item-section>
           </q-item>
-         <q-item clickable class="bg-grey-1" v-ripple @click="panneauDroit = false;nouveauFichier()">
+          <!-- Création d'un fichier nouveau ne comportant qu'une ligne d'entête et un produit 'fake' -->
+         <q-item clickable class="bg-grey-1" v-ripple @click="panneauGauche = false;nouveauFichier()">
             <q-item-section avatar><q-icon class="menuButton" :name="'add_box'"/></q-item-section>
-            <q-item-section class="menuText">Nouveau modèle</q-item-section>
+            <q-item-section class="menuText">Créer un nouveau modèle</q-item-section>
           </q-item>
           <q-separator />
+          <!-- Liste des archives des dernières mises en service -->
           <q-item class="column">
             <div v-if="this.lstArch.length == 0" class="col-auto titre1">Pas de mise à jour archivées</div>
             <div v-else>
-              <div class="col-auto titre1">Dernières mises à jour</div>
+              <div class="col-auto titre1">Dernières mises en service</div>
               <div class="col-auto fichier" v-for="f in lstArch" :key="f" @click="ouvrirFichier(f,true)">{{ f }}</div>
             </div>
           </q-item>
           <q-separator />
+          <!-- Liste des modèles conservés localement -->
           <q-item class="column">
             <div v-if="this.lstMod.length == 0" class="col-auto titre1">Pas de modèles enregistrés</div>
             <div v-else>
@@ -85,17 +100,20 @@
       </q-scroll-area>
     </q-drawer>
 
+    <!-- Zone des articles -->
     <q-page-container>
       <div v-if="selArticles.length === 0" class="pasArticles" style="height:100vh;margin-top:40vh">
         {{ chargement ? 'Chargement en cours ...' : 'Pas d\'articles' }}
       </div>
       <div v-else style="width:100%">
+        <!-- Le clic sur un article ouvre le panneau d'édition de l'article -->
         <div v-for="(a, index) in selArticles" :key="index" @click="clicArticle(a, index)">
           <carte-article :article="a"></carte-article>
         </div>
       </div>
     </q-page-container>
 
+    <!-- Pied de page statistique -->
     <q-footer elevated class="q-py-md bg-black text-white status">
       <div v-if="!fichier || !articles.length">0 article</div>
       <div v-else class="row">
@@ -109,6 +127,7 @@
       </div>
     </q-footer>
 
+    <!-- Dialogue d'enregistrement du fichier courant comme modèle -->
     <q-dialog v-model="enreg" class="modeleDialog">
       <q-card>
         <q-card-section>
@@ -133,6 +152,7 @@
       </q-card>
     </q-dialog>
 
+    <!-- Dialogue de sélection du fichier CSV à importer comme modèle -->
     <q-dialog v-model="fichierlocal" class="modeleDialog">
       <q-card>
         <q-card-section>
@@ -147,11 +167,11 @@
     <q-dialog v-model="envoye">
       <q-card>
         <q-card-section>
-          <div class="text-h6">Envoi du fichier</div>
+          <div class="text-h6">Mise en service du fichier</div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-          <div v-if="dhArchivage">Le fichier a été envoyé aux balances, sauvé et archivé sous le nom {{ dhArchivage }}</div>
-          <div v-else>Le fichier est sauvé mais n'a pas été envoyé aux balances qui l'ont déjà reçu avec le même contenu.</div>
+          <div v-if="dhArchivage">Le fichier a été mis en service, sauvé et archivé sous le nom {{ dhArchivage }}</div>
+          <div v-else>Le fichier est sauvé mais n'a pas été mis en service, l'actuel ayant déjà le même contenu.</div>
         </q-card-section>
         <q-card-actions align="right">
           <q-btn size="1.5rem" flat label="J'ai lu" color="negative" v-close-popup />
@@ -159,6 +179,7 @@
       </q-card>
     </q-dialog>
 
+    <!-- Boîte de dialogue d'alerte avec simple confirmation de lecture du message -->
     <q-dialog v-model="alerte">
       <q-card>
         <q-card-section>
@@ -173,6 +194,7 @@
       </q-card>
     </q-dialog>
 
+    <!-- Boîte de dialogue d'information avec simple confirmation de lecture du message -->
     <q-dialog v-model="info">
       <q-card>
         <q-card-section>
@@ -187,6 +209,7 @@
       </q-card>
     </q-dialog>
 
+  <!-- Boîte de dialogue de confirlation de sortie de l'application -->
     <q-dialog v-model="exitApp" persistent>
       <q-card>
         <q-card-section class="row items-center">
@@ -202,6 +225,7 @@
       </q-card>
     </q-dialog>
 
+    <!-- Boîte de dialogue demandant confirmation de la perte des éditions non sauvées et non mises en service -->
     <q-dialog v-model="perdreModif" persistent>
       <q-card>
         <q-card-section class="row items-center">
@@ -217,6 +241,7 @@
       </q-card>
     </q-dialog>
 
+    <!-- Dialogue demandant confirmation de la destruction d'un modèle -->
     <q-dialog v-model="detruiremodele" persistent>
       <q-card>
         <q-card-section class="row items-center">
@@ -232,17 +257,18 @@
       </q-card>
     </q-dialog>
 
+    <!-- Boîte de dialogue demandant confirmation de la mise en service du fichier apparaissant à l'écran -->
     <q-dialog v-model="envoyerfichier" persistent>
       <q-card>
         <q-card-section class="row items-center">
           <q-avatar icon="block" color="negative" text-color="white"/>
-          <span v-if="fichier && fichier.nom ? true : false" class="q-ml-sm dialogText">Voulez-vous vraiment envoyer ce fichier [{{ fichier.nom }}] aux balances ?</span>
-          <span v-else class="q-ml-sm dialogText">Voulez-vous vraiment envoyer ce fichier aux balances ?</span>
+          <span v-if="fichier && fichier.nom ? true : false" class="q-ml-sm dialogText">Voulez-vous vraiment mettre en service ce fichier [{{ fichier.nom }}] ?</span>
+          <span v-else class="q-ml-sm dialogText">Voulez-vous vraiment mettre ce fichier en service ?</span>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn :size="largeBtnSize" class="dialogText" flat label="Non, je ne l'envoie pas" color="primary" v-close-popup
+          <q-btn :size="largeBtnSize" class="dialogText" flat label="Non, je ne le met pas en service" color="primary" v-close-popup
             @click="envoyerfichier = false"/>
-          <q-btn :size="largeBtnSize" class="dialogText" flat label="Oui, je l'envoie aux balances" color="negative" v-close-popup
+          <q-btn :size="largeBtnSize" class="dialogText" flat label="Oui, je le met en service" color="negative" v-close-popup
             @click="envoyerfichier = false;envoyer2()"/>
         </q-card-actions>
       </q-card>
@@ -314,7 +340,6 @@ export default {
       largeBtnSize: '1.5rem',
       standardBtnSize: '1rem',
       panneauGauche: false,
-      panneauDroit: false,
       perdreModif: false,
       detruiremodele: false,
       envoyerfichier: false,
@@ -461,7 +486,6 @@ export default {
       this.texteAlerte = msg + (err ? '\n' + err : '')
       this.alerte = true
       this.panneauGauche = false
-      this.panneauDroit = false
       this.modifie = false
     },
 
@@ -469,14 +493,13 @@ export default {
       this.texteAlerte = msg
       this.info = true
       this.panneauGauche = false
-      this.panneauDroit = false
       this.modifie = false
     },
 
-    panneauFichiers () {
+    ouvrirMenu () {
       this.lstArch = listeArchMod(true)
       this.lstMod = listeArchMod()
-      this.panneauDroit = true
+      this.panneauGauche = true
     },
 
     verifOuverture () {
@@ -490,7 +513,7 @@ export default {
     async ouvrirFichier (f, arch, source) {
       this.chargement = true
       if (await this.verifOuverture()) {
-        this.panneauDroit = false
+        this.panneauGauche = false
         this.articles = []
         this.selArticles = []
         this.fichier = new Fichier(f, arch)
@@ -508,10 +531,10 @@ export default {
 
     async nouveauFichier () {
       if (await this.verifOuverture()) {
-        this.panneauDroit = false
+        this.panneauGauche = false
         this.articles = []
         this.selArticles = []
-        this.fichier = new Fichier('$N')
+        this.fichier = new Fichier('$N', false)
         try {
           this.articles = await this.fichier.lire()
           this.filtrer()
@@ -588,10 +611,7 @@ export default {
   top: 0
 
 .btnfermerg
-  right: - (1.5 * $largeFontSize)
-
-.btnfermerd
-  left: - (1.5 * $largeFontSize)
+  right: - (1 * $largeFontSize)
 
 .status
   font-size: $standardFontSize

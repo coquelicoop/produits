@@ -36,8 +36,9 @@ export const defVal = ['99999', '', '0000000000000', '0.0', 'A', 'Unite(s)', '']
 export const ligne1 = '99999;"";0000000000000;0.0;A;Unite(s);""\n'
 
 // l'entête CSV depuis les noms des colonnes
-export const enteteCSV = []
+let enteteCSV = []
 for (let i = 0, f = null; (f = colonnes[i]); i++) { enteteCSV.push('"' + f + (i === colonnes.length - 1 ? '"\n' : '";')) }
+enteteCSV = enteteCSV.join('')
 
 // directory racine
 const dir = config.dir
@@ -142,19 +143,19 @@ export class Fichier {
         this.arch = arch
         if (this.nom) {
             if (this.nom === '$S') {
-                this.label = 'fichier importé du central'
+                this.label = 'Fichier importé du central'
             } else if (this.nom === '$N') {
-                this.label = 'fichier vide'
+                this.label = 'Fichier nouveau'
             } else if (arch) {
-                this.label = 'archive [' + nom + ']'
+                this.label = 'Archive [' + nom + ']'
                 this.path = path.join(archivesPath, this.nom + '.csv')
             } else {
-                this.label = 'modèle [' + nom + ']'
+                this.label = 'Modèle [' + nom + ']'
                 this.path = path.join(modelesPath, this.nom + '.csv')
             }
         } else {
             this.path = articlesPath
-            this.label = 'dernier fichier mis en service'
+            this.label = 'Fichier en service'
         }
         this.articles = []
         this.articlesI = []
