@@ -20,7 +20,7 @@ App.vue a la strucyure suivante :
         <q-btn v-if="fichier" class="q-mx-xs" :size="standardBtnSize" color="white" text-color="blue-10" @click="enreg = true" icon="check_circle">Enregistrer<br>comme modèle</q-btn>
         <q-btn v-if="fichier" class="q-mx-xs" :size="standardBtnSize" color="white" text-color="blue-10" @click="envoyer()" icon="send">Mettre<br>en service</q-btn>
         <!-- on ne peut détruire qu'un modèle, pas une archive ou un nouveau fichier ou un l'image chargée de ODOO -->
-        <q-btn v-if="fichier && !fichier.nom.startsWith('$') && !fichier.arch" class="q-mx-xs" :size="standardBtnSize" color="negative" text-color="white" @click="detruiremodele = true" icon="delete">Supprimer<br>ce modèle</q-btn>
+        <q-btn v-if="fichier && fichier.nom && !fichier.nom.startsWith('$') && !fichier.arch" class="q-mx-xs" :size="standardBtnSize" color="negative" text-color="white" @click="detruiremodele = true" icon="delete">Supprimer<br>ce modèle</q-btn>
       </q-toolbar>
       <!-- Critères de filtre et de tri -->
       <div v-if="fichier" class="col row justify-center items-center q-gutter-md q-pa-sm bg-grey-9">
@@ -171,7 +171,7 @@ App.vue a la strucyure suivante :
         </q-card-section>
         <q-card-section class="q-pt-none">
           <div v-if="dhArchivage">Le fichier a été mis en service, sauvé et archivé sous le nom {{ dhArchivage }}</div>
-          <div v-else>Le fichier est sauvé mais n'a pas été mis en service, l'actuel ayant déjà le même contenu.</div>
+          <div v-else>Le fichier n'a pas été mis en service, l'actuel ayant déjà exactement le même contenu.</div>
         </q-card-section>
         <q-card-actions align="right">
           <q-btn size="1.5rem" flat label="J'ai lu" color="negative" v-close-popup />
@@ -286,6 +286,7 @@ import { Fichier, listeArchMod, copieFichier, colonnes, defVal, decore } from '.
 import CarteArticle from './components/CarteArticle.vue'
 import FicheArticle from './components/FicheArticle.vue'
 
+// Liste des critères de filtres des articles
 const optionsFiltre = [
   'Tous',
   'En erreur',
@@ -315,6 +316,10 @@ export default {
 
   components: { CarteArticle, FicheArticle },
 
+  /*
+  Le fichier ouvert par défaut est le fichier actuellement en service.
+  S'il n'existe pas, une alerte apparaît mais il n'y a aucun fichier courant.
+  */
   async mounted() {
     global.appVue = this
     this.fichier = new Fichier()
@@ -332,42 +337,43 @@ export default {
   data () {
     return {
       version: config.version,
-      chargement: false,
-      fichier: null,
-      modifie: false,
-      lstArch: [],
-      lstMod: [],
-      largeBtnSize: '1.5rem',
-      standardBtnSize: '1rem',
-      panneauGauche: false,
-      perdreModif: false,
-      detruiremodele: false,
-      envoyerfichier: false,
-      fichierlocal: false,
-      envoye: false,
-      exitApp: false,
-      alerte: false,
-      info: false,
-      enreg: false,
-      dhArchivage: '',
-      texteAlerte: '',
-      fichierImport: null,
-      articles: [],
-      selArticles: [],
-      index: 0,
-      position: 0,
-      nomModele: '',
-      tri: 'Numéro de ligne',
-      itri: 0,
+      chargement: false, // vrai si le chargement des articles est en cours
+      fichier: null, // objet fichier "courant". Peut-être null à l'ouverture s'il n'y a pas de fichier mis en service
+      modifie: false, // vrai si le fichier courant a subi au moins une édition
+      lstArch: [], // liste des noms des fichiers archivés (historique des dernières mises en service)
+      lstMod: [], // liste des fichiers modèles gardés pour mémoire, être retravaillés, etc.
+      largeBtnSize: '1.5rem', // taille d'un grand bouton
+      standardBtnSize: '1rem', // taille d'un bouton standard
+      panneauGauche: false, // model contrôlant l'ouverture du menu (panneau gauche)
+      perdreModif: false, // model contrôlant l'ouverture du dialogue demandant confirmation pour la perte des éditions en cours
+      detruiremodele: false, // model contrôlant l'ouverture du dialogue demandant confirmation pour la destruction d'un fichier modèle
+      envoyerfichier: false, // model contrôlant l'ouverture du dialogue demandant confirmation pour mettre en service le fichier courant
+      fichierlocal: false, // model contrôlant l'ouverture du dialogue de choix d'un fichier local à importer comme modèle
+      envoye: false, // model contrôlant l'ouverture du dialogue notifiant de la mise en service du fichier courant
+      exitApp: false, // model contrôlant l'ouverture du dialogue demandant confirmation de la sortie de l'application
+      alerte: false, // model contrôlant l'ouverture du dialogue d'affichage d'une alerte
+      info: false, // model contrôlant l'ouverture du dialogue d'affichage d'une information
+      enreg: false, // model contrôlant l'ouverture du dialogue informant de l'enregistrement du fichier courant
+      dhArchivage: '', // date-heure d'archivage (mise en service du fichier courant)
+      texteAlerte: '', // texte de l'alerte à afficher
+      fichierImport: null, // objet "file" de sélection d'un fichier local
+      articles: [], // liste des articles du fichier courant
+      selArticles: [], // liste des articles sélectionnés par mi ceux de articles[]
+      index: 0, // index de l'article courant dans articles[]. Elle ne change pas.
+      position: 0, // index de l'article courant dans selArticles[] (sa position dans la sélection). Elle change selon la sélection/tri actuels
+      nomModele: '', // nom (fileName) du fichier modèle
+      tri: 'Numéro de ligne', // critère de tri courant
+      itri: 0, // indice du critère de tri dans la liste des critères
       optionsTri: ['Numéro de ligne', 'Code de l\'article', 'Nom (alphabétique)', 'Code barre', 'Code court à 2 lettres'],
-      filtre: 'Tous',
-      ifiltre: 0,
+      filtre: 'Tous', // critère de filtre
+      ifiltre: 0, // indice du critère de filtre dans la liste
       optionsFiltre: optionsFiltre,
-      argFiltre: ''
+      argFiltre: '' // paramètre optionnel du critère de filtre actuel (tous n'en n'ont pas un)
     }
   },
 
   watch: {
+    // détection de la sélection d'un fichier dans le dialogue de sélection
     fichierImport (apres) {
       this.fichierlocal = false
       if (apres) {
@@ -375,14 +381,17 @@ export default {
         this.fichierImport = null
       }
     },
+    // détection du changement de critère de tri
     tri (option, avant) {
       this.itri = this.optionsTri.indexOf(option)
       if (this.itri !== -1 && option !== avant) { this.trier() }
     },
+    // détection du changement de critère de filtre
     filtre (option, avant) {
       this.ifiltre = this.optionsFiltre.indexOf(option)
       if (this.ifiltre !== -1 && option !== avant) { this.filtrer() }
     },
+    // détection du changement de valeur du paramètre optionnel du critère de filtre courant
     argFiltre (option, avant) {
       if (option !== avant) { this.filtrer() }
     }
@@ -391,8 +400,10 @@ export default {
   methods: {
     quit () { config.quit() },
 
+    // test si un nom est de longueur entre 4 et 32 et ne comporte que des caractères a-ZA-Z0-9-_
     b64u (val) { return b64u(val, 4, 32) },
 
+    // tri des articles selon le critère demandé
     trier () {
       let c = this.itri
       // optionsTri: ['Numéro de ligne', 'Code de l\'article', 'Nom (alphabétique)', 'Code barre', 'Code court à 2 lettres']
@@ -405,6 +416,7 @@ export default {
       }
     },
 
+    // sélection des articles selon le critère de filtre courant et la valeur de son argument éventuel
     filtrer () {
       /*
       0 'Tous',
@@ -461,10 +473,17 @@ export default {
       this.trier()
     },
 
+    // l'aricle cliqué devient l'article courant : il est affiché par le composant ficheArticle. Arguments : index de l'article et position dans la sélection courante
     clicArticle (a, pos) {
       global.ficheArticle.ouvrir(a.n - 1, pos)
     },
 
+    /*
+    Ajout d'un nouvel article en queue de la liste : c'est ce qui permet de savoir qu'il a été créé.
+    Des valeurs par défaut sont données à toutes les colonnes.
+    L'article est décoré pour qu'il ait toutes propriétés calculées ET ses erreurs (par principe certaines propriétés par défaut ne sont pas acceptables).
+    Les stats sont recalculés. On fait ensuite comme si on avait cliqué sur cet article qui a besoin d'être édité.
+    */
     ajouterArticle () {
       let data = {}
       for (let i = 0, c = null; (c = colonnes[i]); i++) { data[c] = defVal[i] }
@@ -476,12 +495,25 @@ export default {
       this.clicArticle(data, this.selArticles.length - 1)
     },
 
-    dataChange () {
+    /*
+    Cet événement est invoqué par ficheArticle quand un article a été édité et qu'on est passé au suivant / précédent ou sorti
+    de ficheArticle, bref quand l'article est validé (a un nouveau contenu).
+    Le recalcul de la sélection et de son tri est affectée par par le changement des valeurs de l'article.
+    - si on recalcule toujours, on peut avoir un article qui peut sortir de la sélection et changer de place.
+    Du coup la notion de "suivant" / "précédent" dans FicheArticle va être fausse.
+    - on ne recalcule donc la sélection QUE quand on sort de FicheArticle.
+    En contrepartie, l'article reste dans la sélection et à sa place initiale même si ça n'a plus lieu d'être
+    ce qui est moins nocif que de risquer de faire sauter l'article de la sélection (qui à la limite aurait pu être vide).
+    */
+    dataChange (etFermer) {
       this.fichier.stats()
-      this.filtrer()
-      this.trier()
+      if (etFermer) {
+        this.filtrer()
+        this.trier()
+      }
     },
 
+    // Sortie de la boîte de dialogue d'affichage d'une alerte
     erreur (msg, err) {
       this.texteAlerte = msg + (err ? '\n' + err : '')
       this.alerte = true
@@ -489,6 +521,7 @@ export default {
       this.modifie = false
     },
 
+    // Sortie de la boîte de dialogue d'affichage d'une information
     information (msg) {
       this.texteAlerte = msg
       this.info = true
@@ -496,12 +529,22 @@ export default {
       this.modifie = false
     },
 
+    /*
+    Ouverture du menu. Les listes des archives en ligne et des modèles en ligne sont réévaluées.
+    Elles pourraient avoir changé depuis la dernière fois.
+    */
     ouvrirMenu () {
       this.lstArch = listeArchMod(true)
       this.lstMod = listeArchMod()
       this.panneauGauche = true
     },
 
+    /*
+    Ouverture de la boîte de dialogue demandant à l'utilisateur si on peut ouvrir un fichier
+    bien que le courant n'ait pas été enregistré.
+    La demande par principe est asynchrone : on se milite à enregistrer la fonction lambda resolve qui sera invoquée
+    quand l'utilisateur donnera son avis. C'est la boîte de dialogue qui invoque ce resolve()
+    */
     verifOuverture () {
       if (!this.fichier || !this.modifie) { return true }
       this.perdreModif = true
@@ -510,6 +553,14 @@ export default {
       })
     },
 
+    /*
+    Ouverture d'un fichier.
+    Il faut déjà que l'utilisateur accepte de ne pas enregistrer son fichier actuel au cas où il aurait des modifications.
+    On ferme le panneau gauche "menu".
+    - f : nom du fichier. nom du modèle, ou nom d'archive, ou £N (nouveau) ou $S (dsource du serveur ODOO)
+    - arch : true si un fichier d'archive
+    - source : pour ODOO la liste des articles (array d'objets directement), pour un fichier nouveau un array vide
+    */
     async ouvrirFichier (f, arch, source) {
       this.chargement = true
       if (await this.verifOuverture()) {
@@ -529,46 +580,43 @@ export default {
       }
     },
 
+    // Création du fichier et lecture d'une source d'articles vide
     async nouveauFichier () {
+      await this.ouvrirFichier('$N', false, [])
+    },
+
+    // Obtention de la liste des articles depuis ODOO
+    async ouvrirODOO () {
       if (await this.verifOuverture()) {
-        this.panneauGauche = false
-        this.articles = []
-        this.selArticles = []
-        this.fichier = new Fichier('$N', false)
         try {
-          this.articles = await this.fichier.lire()
-          this.filtrer()
-        } catch (e) {
-          this.fichier = null
-          this.erreur('Le nouveau fichier est corrompu ou inaccessible.', e.message)
+          this.chargement = true
+          const source = await getArticles()
+          await this.ouvrirFichier('$S', false, source)
+        } catch (err) {
+          this.erreur('L\'importation des articles depuis ODOO a échoué.\n', err.message)
         }
       }
     },
 
+    /*
+    L'import d'un fichier local consiste à le copier comme modèle, puis à l'ouvrir en tant que modèle
+    */
     async importFichier (name, path) {
-      if (!name.endsWith('.csv')) {
-        this.erreur('Le fichier sélectionné doit être un ".csv".')
-        return
-      }
-      try {
-        await copieFichier(name, path)
-        await this.ouvrirFichier(name)
-      } catch (err) {
-        this.erreur('Le fichier sélectionné n\'a pas pu être importé comme modèle.\n', err.message)
+      if (await this.verifOuverture()) {
+        if (!name.endsWith('.csv')) {
+          this.erreur('Le fichier sélectionné doit être un ".csv".')
+          return
+        }
+        try {
+          await copieFichier(name, path)
+          await this.ouvrirFichier(name)
+        } catch (err) {
+          this.erreur('Le fichier sélectionné n\'a pas pu être importé comme modèle.\n', err.message)
+        }
       }
     },
 
-    async ouvrirODOO () {
-      try {
-        this.chargement = true
-        const source = await getArticles()
-        await this.ouvrirFichier('$S', false, source)
-      } catch (err) {
-        this.erreur('L\'importation des articles depuis ODOO a échoué.\n', err.message)
-      }
-      // this.information('Cette fonctionnalité est en cours de développement')
-    },
-
+    // Enregistrement en tant que modèle : invoqué par la boîte de dialogue de saisie du nom du modèle
     async enregModele () {
       let m = this.nomModele
       this.enreg = false
@@ -580,6 +628,7 @@ export default {
       }
     },
 
+    // Mise en service du fichier courant. Ouverture de la boîte de dialogue de confirmation que le fichier devait être mis en service.
     envoyer () {
       this.fichier.stats()
       if (this.fichier.nberreurs) {
@@ -590,11 +639,17 @@ export default {
       }
     },
 
+    /*
+    Après confirmation de mise en service du fichier : écriture du fichier dans articles.csv et ouverture de la boîte de dialogue d'information
+    Si la date-heure d'archivage qui revient est null, c'est que le fichier actuellement en service est exactement le même et n'a pas été
+    ni ré-écrit sur articles.csv, ni mis en archive
+    */
     async envoyer2 () {
       this.dhArchivage = await this.fichier.ecrire(null, true)
       this.envoye = true
     },
 
+    // Destruction d'un modèle, ouverture du fichier actuellement en service
     async detruire () {
       this.fichier.detruire()
       await this.ouvrirFichier()

@@ -19,7 +19,6 @@ calculées depuis la ligne du fichier CSV:
 
 import { config } from './config'
 import { removeDiacritics, editEAN, formatPrix, dateHeure, centimes, nChiffres, codeCourtDeId, poidsPiece } from './global'
-const { Readable } = require('stream')
 const csv = require('csv-parser')
 const fs = require('fs')
 const path = require('path')
@@ -195,6 +194,7 @@ export class Fichier {
         this.articles = na
         this.stats() // on recalcule les stats, en particulier puisque les articles ont changé de status
         let aEnvoyer = envoi && !eqRef(na) // le fichier est à mettre à disposition des balances, SI c'est deamndé en paramètre ET SI ça change de la référence (le dernier mis à disposition)
+        if (!n && !aEnvoyer) return null // c'est le fichier actuellement en service ET il est inchangé : on ne sauve rien
         return new Promise((resolve, reject) => {
             const csvStringifier = createCsvStringifier({ header: header, fieldDelimiter: ';' })
             const s = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(na)
@@ -205,7 +205,11 @@ export class Fichier {
             }
             if (n) {
                 // c'est n'importe quoi à sauver comme modèle
-                fs.writeFileSync(path.join(modelesPath, n + '.csv'), s, (err) => { reject(err) })
+                this.nom = n // désormais si c'était un fichier nouveau, c'est devenu un modèle nommé
+                this.arch = false
+                this.label = 'Modèle [' + this.nom + ']'
+                this.path = path.join(modelesPath, this.nom + '.csv')
+                fs.writeFileSync(this.path, s, (err) => { reject(err) })
             }
             if (aEnvoyer) {
                 // le contenu diffère de celui mis à disposition des balances : le sauver mettre en archives ET dans aricles.csv. C'est la nouvelle référence
@@ -215,17 +219,16 @@ export class Fichier {
                 reference = [] // ça devient la nouvelle réfrence. On clone les articles parce que le fichier courant peut ensuite être édité
                 for (let i = 0, data = null; (data = this.articles[i]); i++) reference.push(clone(data))
             }
-            resolve(a)
+            resolve(a) // date-heure d'archivage; null si n'a pas été copié dans articles.csv / archive
         })
     }
 
     /*
     Lecture d'un fichier CSV :
     Si le fichier a pour nom $S l'argument source est l'array des articles (objets) importée des données du serveur central (ODOO).
-    Si le fichier est $N,
-        a) soit la source est constituée de la seule entête CSV (elle n'est pas donnée en argument).
-        b) soit c'est un fichier externe dont source donne le path
-    Sinon le contenu est lu depuis le fichier dont le path a été défini au constructor (nom arch)
+    Si le fichier est $N la source est un array vide
+    Sinon le contenu est lu depuis le fichier dont le path a été défini au constructor (nom arch) ou n'a pas de nom (articles.csv).
+    Un fichier importé est copié comme modèle avant ouverture en tant que modèle.
     Propriétés :
         articles : array des articles dans leur état courant (potenteiellement modifiés, créés, détruits)
         articlesI : array des articles dans leur état initial, clonés à la lecture, pour savoir pour chaque article quel étatit son état avant édition
@@ -238,36 +241,31 @@ export class Fichier {
         doublons : liste des index des articles en doublon d'id
     */
     async lire (source) {
-        if (this.nom === '$S') {
-            this.articles = source
-            for (let i = 0, data = null; (data = this.articles[i]); i++) {
+        if (this.nom && this.nom.startsWith('$')) {
+            // Synchrone : pas de lecture de fichiers
+            this.articles = []
+            this.articlesI = []
+            let n = 0
+            for (let i = 0, data = null; (data = source[i]); i++) {
                 // Chaque article est numéroté et décoré (ajout de propriétés calculées)
-                data.n = i + 1
-                data.status = 0
-                this.articlesI.push(clone(data)) // cloné dans articlesI pour avoir son état avant édition éventuelle
-                await decore(data)
+                let c = transcodeCategorie(data.categorie)
+                if (c) { // on ignore les articles n'ayant pas de catégprie acceptées
+                    n++
+                    data.n = n
+                    data.status = 0
+                    data.categorie = c
+                    await decore(data)
+                    this.articlesI.push(clone(data)) // cloné dans articlesI pour avoir son état avant édition éventuelle
+                    this.articles.push(data)
+                }
             }
             this.stats() // recalcul des statistiques sur le fichier
             return this.articles
         }
 
+        // Asynchrone : il y a lecture de fichier et parse CSV
         return new Promise((resolve, reject) => {
-            let stream // le stream diffère selon la source du fichier
-            if (this.nom && this.nom.startsWith('$')) {
-                if (this.nom === '$S') {
-                    stream = Readable.from([source])
-                } else if (this.nom === '$N') {
-                    if (source) {
-                        // en fait source est le path du fichier à importer
-                        stream = fs.createReadStream(source)
-                    } else {
-                        // pas de source, c'est un texte "vide", une entête et une ligne 1 par défaut
-                        stream = Readable.from([enteteCSV, ligne1])
-                    }
-                }
-            } else {
-                stream = fs.createReadStream(this.path)
-            }
+            const stream = fs.createReadStream(this.path)
             let n = 0 // compteur d'article lu / parsé
             this.erreur = false // pas trouvé d'erreur à la lecture / parse
             let ref = [] // deviendra (ou non) la future réfrence
@@ -281,15 +279,15 @@ export class Fichier {
                     Pour chaque article, préparé ou non pour être mis en référence, décompté, status à 0
                     et conservé dans articles (à éditer) et articlesI (état initial avant édition)
                     */
-                    if (!this.nom) ref.push(clone(data))
-                    n++
-                    data.n = n
-                    data.status = 0
-                    this.articlesI.push(clone(data))
                     let c = transcodeCategorie(data.categorie)
                     if (c) { // on ignore les articles n'ayant pas de catégprie acceptées
+                        n++
+                        data.n = n
+                        data.status = 0
                         data.categorie = c
+                        if (!this.nom) ref.push(clone(data))
                         this.articles.push(data)
+                        this.articlesI.push(clone(data))
                     }
                 })
                 .on('end', async () => {
@@ -297,6 +295,7 @@ export class Fichier {
                     Tous lus :
                     - on décore tous les articles : recherche d'erreurs, ajout de propriétés
                     - on calcule la statistique globale
+                    Le await decore() est fait "on end" et a posé des problèmes quand il était fait dans "on data" (qui ne sembalit pas accepter le async (?)
                     */
                     if (!this.nom) reference = ref
                     for (let i = 0, data = null; (data = this.articles[i]); i++) {

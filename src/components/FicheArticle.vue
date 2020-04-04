@@ -452,10 +452,10 @@ export default {
     },
 
     /* validation des éditions de l'article : ses champs calculés le sont, son status est évalué, ET App.vue EST NOTIFIE */
-    async valider () {
+    async valider (etFermer) {
       this.setStatus()
       await decore(this.data)
-      global.appVue.dataChange()
+      global.appVue.dataChange(etFermer)
     },
 
     /* annulation des éditions de l'article : ses champs sont remis à la valeur AVANT puis il est validé */
@@ -476,7 +476,7 @@ export default {
     /* Validation de l'article ET fermeture de fiche article : si l'article a des erreurs, deamnde confirmation */
     async validerEtFermer() {
       if (this.data.erreurs.length !== 0 && !(await this.fermerQuandMeme())) { return }
-      this.valider()
+      this.valider(true)
       this.ficheArticle = false
     }
 
