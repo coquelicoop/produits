@@ -50,7 +50,8 @@ const odoo = new Odoo({
     port: config.port,
     database: config.database,
     username: config.username,
-    password: config.password
+    password: config.password,
+    timeout: 5000
 })
 
 function codeDeId(x) {

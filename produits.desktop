@@ -1,4 +1,4 @@
-[Desktop Entry]
+quasar dev -m electron[Desktop Entry]
 Name=produits
 Type=Application
 Exec=/home/daniel/git/produits/dist/electron/produits-linux-x64/produits
