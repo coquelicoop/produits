@@ -19,6 +19,7 @@
     "electron-rebuild": "^1.0.0",
     "jimp": "^0.9.3",
     "odoo": "file:/home/daniel/git/odoo-0.4.1.tgz",
+    "XXXodoo": "file:/C:/git/odoo-0.4.1.tgz",
     "quasar": "^1.8.5"
   },
   "devDependencies": {
