@@ -293,8 +293,6 @@ const optionsFiltre = [
   'Bio',
   'Non bio',
   'A l\'unité',
-  'A l\'unité AVEC le poids à la pièce',
-  'A l\'unité SANS le poids à la pièce',
   'Au Kg',
   'Sans image',
   'Avec image de largeur > à ...',
@@ -424,22 +422,20 @@ export default {
       2 'Bio',
       3 'Non bio',
       4 'A l\'unité',
-      5 'A l\'unité AVEC le poids à la pièce',
-      6 'A l\'unité SANS le poids à la pièce',
-      7 'Au Kg',
-      8 'Sans image',
-      9 'Avec image de largeur > à ...',
-      10 'Dont le code commence par ...',
-      11 'Dont le code barre commence par ...',
-      12 'Dont le code court est ...',
-      13 'Dont le nom contient ...',
-      14 'Dont le nom commence par ...',
-      15 'Créés',
-      16 'Modifiés',
-      17 'Supprimés'
-      18 'Inchangés'
-      19 : 'Doublons de code article'
-      20 : 'Ayant un code court fixé'
+      5 'Au Kg',
+      6 'Sans image',
+      7 'Avec image de largeur > à ...',
+      8 'Dont le code commence par ...',
+      9 'Dont le code barre commence par ...',
+      10 'Dont le code court est ...',
+      11 'Dont le nom contient ...',
+      12 'Dont le nom commence par ...',
+      13 'Créés',
+      14 'Modifiés',
+      15 'Supprimés'
+      16 'Inchangés'
+      17 : 'Doublons de code article'
+      18 : 'Ayant un code court fixé'
       */
       let c = this.ifiltre
       let n = parseInt(this.argFiltre)
@@ -452,23 +448,21 @@ export default {
         case 1 : { this.selArticles = s.filter(a => a.erreurs.length !== 0); break }
         case 2 : { this.selArticles = s.filter(a => a.bio); break }
         case 3 : { this.selArticles = s.filter(a => !a.bio); break }
-        case 4 : { this.selArticles = s.filter(a => a.poidsPiece >= 0); break }
-        case 5 : { this.selArticles = s.filter(a => a.poidsPiece > 0); break }
-        case 6 : { this.selArticles = s.filter(a => a.poidsPiece === 0); break }
-        case 7 : { this.selArticles = s.filter(a => a.poidsPiece === -1); break }
-        case 8 : { this.selArticles = s.filter(a => !a.image); break }
-        case 9 : { this.selArticles = s.filter(a => a.imagel > n); break }
-        case 10 : { this.selArticles = s.filter(a => a.id.startsWith(p)); break }
-        case 11 : { this.selArticles = s.filter(a => a['code-barre'].startsWith(p)); break }
-        case 12 : { this.selArticles = s.filter(a => a.codeCourt.toUpperCase.startsWith(p.toUpperCase)); break }
-        case 13 : { this.selArticles = s.filter(a => a.nomN.indexOf(P) !== -1); break }
-        case 14 : { this.selArticles = s.filter(a => a.nomN.startsWith(P)); break }
-        case 15 : { this.selArticles = s.filter(a => a.status === 1 || a.status === 4); break }
-        case 16 : { this.selArticles = s.filter(a => a.status === 2); break }
-        case 17 : { this.selArticles = s.filter(a => a.status >= 3); break }
-        case 18 : { this.selArticles = s.filter(a => a.status === 0); break }
-        case 19 : { this.selArticles = s.filter(a => this.fichier.mapId[a.id] > 1); break }
-        case 20 : { this.selArticles = s.filter(a => a.nom.startsWith('[' + a.codeCourt + ']')) }
+        case 4 : { this.selArticles = s.filter(a => a.unite); break }
+        case 5 : { this.selArticles = s.filter(a => !a.unite); break }
+        case 6 : { this.selArticles = s.filter(a => !a.image); break }
+        case 7 : { this.selArticles = s.filter(a => a.imagel > n); break }
+        case 8 : { this.selArticles = s.filter(a => a.id.startsWith(p)); break }
+        case 9 : { this.selArticles = s.filter(a => a['code-barre'].startsWith(p)); break }
+        case 10 : { this.selArticles = s.filter(a => a.codeCourt.toUpperCase.startsWith(p.toUpperCase)); break }
+        case 11 : { this.selArticles = s.filter(a => a.nomN.indexOf(P) !== -1); break }
+        case 12 : { this.selArticles = s.filter(a => a.nomN.startsWith(P)); break }
+        case 13 : { this.selArticles = s.filter(a => a.status === 1 || a.status === 4); break }
+        case 14 : { this.selArticles = s.filter(a => a.status === 2); break }
+        case 15 : { this.selArticles = s.filter(a => a.status >= 3); break }
+        case 16 : { this.selArticles = s.filter(a => a.status === 0); break }
+        case 17 : { this.selArticles = s.filter(a => this.fichier.mapId[a.id] > 1); break }
+        case 18 : { this.selArticles = s.filter(a => a.nom.startsWith('[' + a.codeCourt + ']')) }
       }
       this.trier()
     },

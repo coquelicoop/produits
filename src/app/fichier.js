@@ -9,7 +9,7 @@ calculées depuis la ligne du fichier CSV:
     nomN : nom normalisé, en majuscule et sans accent
     err[] : liste des erreurs détectées
     codeCourt : deux lettres en majuscules calculées depuis l'id ou donné explicitement en tête du nom
-    poidsPiece : poids donné en fin du nom après // représentant le poids unitaire moyen d'une pièce. -1 pour un article à peser
+    unite : true si le produit est à l'unité (pas à peser mais à décompter)
     bio : true si le mot BIO figure dans le nom (non case sensitive)
     prixN : prix sous forme numérique
     imagel : largeur de l'image
@@ -18,7 +18,7 @@ calculées depuis la ligne du fichier CSV:
 */
 
 import { config } from './config'
-import { removeDiacritics, editEAN, formatPrix, dateHeure, centimes, nChiffres, codeCourtDeId, poidsPiece } from './global'
+import { removeDiacritics, editEAN, formatPrix, dateHeure, centimes, nChiffres, codeCourtDeId } from './global'
 const csv = require('csv-parser')
 const fs = require('fs')
 const path = require('path')
@@ -392,8 +392,6 @@ export async function maj (data, col, val, simple) {
             data.codeCourt = codeCourtDeId(data.id, data.nom)
             data.nomN = removeDiacritics(data.nom.toUpperCase())
             data.bio = (data.nomN.indexOf('BIO') !== -1)
-            let [, p] = poidsPiece(data.unite, data.nom)
-            data.poidsPiece = p
             return ''
         }
         case 'prix' : {
@@ -410,14 +408,7 @@ export async function maj (data, col, val, simple) {
         }
         case 'unite' : {
             if (!val || (!val.startsWith('Unit') && val !== 'kg')) return 'unite doit valoir "Unite(s) ou Unité(s)" ou "kg" - [' + val + '] trouvé'
-            data.unite = val
-            if (data.unite.startsWith('Unit')) {
-                data.unite = 'Unité(s)'
-                let [, p] = poidsPiece(data.unite, data.nom)
-                data.poidsPiece = p
-            } else {
-                data.poidsPiece = -1
-            }
+            data.unite = val.startsWith('Unit')
             return ''
         }
         case 'code-barre' : {
