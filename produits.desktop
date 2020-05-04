@@ -1,9 +1,8 @@
-quasar dev -m electron[Desktop Entry]
+[Desktop Entry]
 Name=produits
 Type=Application
-Exec=/home/daniel/git/produits/dist/electron/produits-linux-x64/produits
+Exec=/home/coquelicoop/balance/produits-linux-x64/produits
 Terminal=false
-Icon=/home/daniel/git/produits/tomate.png
+Icon=/home/coquelicoop/balance/produits-linux-x64/tomate.png
 NoDisplay=false
-Categories=Development;IDE;
-Name[fr_FR]=produits.desktop
+Categories=Utility;

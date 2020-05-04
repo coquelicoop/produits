@@ -95,7 +95,7 @@ Tout ceci selon le statut d'édition de l'article.
         <!-- Unité(s) ou kg -->
         <div class="q-gutter-sm shadow-5 input1">
           <q-radio v-model="data.unite" val="kg" label="au Kg" />
-          <q-radio v-model="data.unite" val="Unité(s)" label="à l'unité" />
+          <q-radio v-model="data.unite" val="Unite(s)" label="à l'unité" />
         </div>
 
         <!-- Affichage de l'image -->

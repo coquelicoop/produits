@@ -448,8 +448,8 @@ export default {
         case 1 : { this.selArticles = s.filter(a => a.erreurs.length !== 0); break }
         case 2 : { this.selArticles = s.filter(a => a.bio); break }
         case 3 : { this.selArticles = s.filter(a => !a.bio); break }
-        case 4 : { this.selArticles = s.filter(a => a.unite); break }
-        case 5 : { this.selArticles = s.filter(a => !a.unite); break }
+        case 4 : { this.selArticles = s.filter(a => a.unite !== 'kg'); break }
+        case 5 : { this.selArticles = s.filter(a => !a.unite === 'kg'); break }
         case 6 : { this.selArticles = s.filter(a => !a.image); break }
         case 7 : { this.selArticles = s.filter(a => a.imagel > n); break }
         case 8 : { this.selArticles = s.filter(a => a.id.startsWith(p)); break }

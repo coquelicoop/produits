@@ -9,7 +9,7 @@ calculées depuis la ligne du fichier CSV:
     nomN : nom normalisé, en majuscule et sans accent
     err[] : liste des erreurs détectées
     codeCourt : deux lettres en majuscules calculées depuis l'id ou donné explicitement en tête du nom
-    unite : true si le produit est à l'unité (pas à peser mais à décompter)
+    unite : kg si le produit est à peser
     bio : true si le mot BIO figure dans le nom (non case sensitive)
     prixN : prix sous forme numérique
     imagel : largeur de l'image
@@ -408,7 +408,7 @@ export async function maj (data, col, val, simple) {
         }
         case 'unite' : {
             if (!val || (!val.startsWith('Unit') && val !== 'kg')) return 'unite doit valoir "Unite(s) ou Unité(s)" ou "kg" - [' + val + '] trouvé'
-            data.unite = val.startsWith('Unit')
+            data.unite = val.startsWith('Unit') ? 'Unite(s)' : 'kg'
             return ''
         }
         case 'code-barre' : {

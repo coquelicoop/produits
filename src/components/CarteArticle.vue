@@ -31,7 +31,7 @@ Seul élément dynamique : l'affichage des erreurs quand on clique sur lechip "e
 
     <!-- colonne du prix, du pods par pièce et de l'icône BIO -->
     <div class="col-auto column items-start droite">
-      <div class="col-auto prix" v-if="!article.unite">{{ article.prix }}€ le Kg</div>
+      <div class="col-auto prix" v-if="article.unite === 'kg'">{{ article.prix }}€ le Kg</div>
       <div class="col-auto prix" v-else>{{ article.prix }}€ piéce</div>
       <div v-if="article.bio" class="col self-end"><img class="iconeAB" src="../assets/logoAB.jpg"></div>
     </div>
