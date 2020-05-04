@@ -454,7 +454,7 @@ export default {
         case 7 : { this.selArticles = s.filter(a => a.imagel > n); break }
         case 8 : { this.selArticles = s.filter(a => a.id.startsWith(p)); break }
         case 9 : { this.selArticles = s.filter(a => a['code-barre'].startsWith(p)); break }
-        case 10 : { this.selArticles = s.filter(a => a.codeCourt.toUpperCase.startsWith(p.toUpperCase)); break }
+        case 10 : { this.selArticles = s.filter(a => a.codeCourt.startsWith(p.toUpperCase())); break }
         case 11 : { this.selArticles = s.filter(a => a.nomN.indexOf(P) !== -1); break }
         case 12 : { this.selArticles = s.filter(a => a.nomN.startsWith(P)); break }
         case 13 : { this.selArticles = s.filter(a => a.status === 1 || a.status === 4); break }
