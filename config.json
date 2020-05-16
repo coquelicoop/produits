@@ -1,11 +1,12 @@
 {
-"host": "192.168.1.10",
-"port": 8069,
-"database": "coquelicoop",
-"username": "xxx@coquelicoop.fr",
-"password": "XXX",
-"minCB": "20000000000000",
-"maxCB": "29999999999999",
-"categories": {"F": "F", "L": "L", "V": "V", "A": "A", "FLF-Fruits et Légumes Frais / 01-Fruits Frais": "F", "défaut": "A" },
-"map": {"id":"id", "name":"nom", "barcode":"code-barre", "list_price":"prix", "categ_id":"categorie", "uom_id":"unite", "image": "image"}
-}
+    "host": "coquelicoop.druidoo.io",
+    "port": 443,
+    "https": true,
+    "username": "monnom@example.com",
+    "password": "secret",
+    "database": "coquelicoop",
+    
+    "selection": [["barcode", ">", "2000000000000"], ["barcode", "<", "2999000000000"], ["sale_ok", "=", true], ["available_in_pos", "=", true], ["to_weight", "=", true]],
+    "categories": {"Fruits frais": "F", "Légumes frais": "L", "V": "V", "A": "A", "défaut": "A" },
+    "map": {"id":"id", "name":"nom", "barcode":"code-barre", "list_price":"prix", "categ_id":"categorie", "uom_id":"unite", "image": "image"}
+    }
