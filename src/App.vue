@@ -266,9 +266,9 @@ App.vue a la strucyure suivante :
           <span v-else class="q-ml-sm dialogText">Voulez-vous vraiment mettre ce fichier en service ?</span>
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn :size="largeBtnSize" class="dialogText" flat label="Non, je ne le met pas en service" color="primary" v-close-popup
+          <q-btn :size="largeBtnSize" class="dialogText" flat label="Non, je ne le mets pas en service" color="primary" v-close-popup
             @click="envoyerfichier = false"/>
-          <q-btn :size="largeBtnSize" class="dialogText" flat label="Oui, je le met en service" color="negative" v-close-popup
+          <q-btn :size="largeBtnSize" class="dialogText" flat label="Oui, je le mets en service" color="negative" v-close-popup
             @click="envoyerfichier = false;envoyer2()"/>
         </q-card-actions>
       </q-card>
