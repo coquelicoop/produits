@@ -51,16 +51,6 @@ const modelesPath = path.join(dir, 'modèles')
 // nom du fichier de référence articles.csv mis à disposition des balances
 const articlesPath = path.join(dir, 'articles.csv')
 
-/*
-Categories d'articles acceptées. Remplacées par celle indiquée dans la map. Si non trouvée:
-- ignorées si 'défaut':''
-- remplacée si 'défaut': 'autre catégorie'
-*/
-const categories = config.categories || { 'défaut': 'A' }
-function transcodeCategorie (c) {
-    return categories[c] || categories['défaut']
-}
-
 // nombre maximal de fichiers gardés en archives
 const maxArch = config.nbMaxArchives ? config.nbMaxArchives : 10
 
@@ -248,16 +238,12 @@ export class Fichier {
             let n = 0
             for (let i = 0, data = null; (data = source[i]); i++) {
                 // Chaque article est numéroté et décoré (ajout de propriétés calculées)
-                let c = transcodeCategorie(data.categorie)
-                if (c) { // on ignore les articles n'ayant pas de catégprie acceptées
-                    n++
-                    data.n = n
-                    data.status = 0
-                    data.categorie = c
-                    await decore(data)
-                    this.articlesI.push(clone(data)) // cloné dans articlesI pour avoir son état avant édition éventuelle
-                    this.articles.push(data)
-                }
+                n++
+                data.n = n
+                data.status = 0
+                await decore(data)
+                this.articlesI.push(clone(data)) // cloné dans articlesI pour avoir son état avant édition éventuelle
+                this.articles.push(data)
             }
             this.stats() // recalcul des statistiques sur le fichier
             return this.articles
@@ -279,16 +265,12 @@ export class Fichier {
                     Pour chaque article, préparé ou non pour être mis en référence, décompté, status à 0
                     et conservé dans articles (à éditer) et articlesI (état initial avant édition)
                     */
-                    let c = transcodeCategorie(data.categorie)
-                    if (c) { // on ignore les articles n'ayant pas de catégprie acceptées
-                        n++
-                        data.n = n
-                        data.status = 0
-                        data.categorie = c
-                        if (!this.nom) ref.push(clone(data))
-                        this.articles.push(data)
-                        this.articlesI.push(clone(data))
-                    }
+                    n++
+                    data.n = n
+                    data.status = 0
+                    if (!this.nom) ref.push(clone(data))
+                    this.articles.push(data)
+                    this.articlesI.push(clone(data))
                 })
                 .on('end', async () => {
                     /*

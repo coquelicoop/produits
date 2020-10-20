@@ -39,8 +39,6 @@ export const config = new Config()
 
 let dir
 
-
-
 try {
     config.version = remote.app.getVersion()
     const argv = remote.process.argv
@@ -53,14 +51,6 @@ try {
     }
     if (!dir) { dir = require('os').homedir() + '/balance' }
     config.dir = path.normalize(dir)
-    const rawdata = fs.readFileSync(path.join(config.dir, 'config.json'))
-    if (rawdata) {
-        const obj = JSON.parse(rawdata)
-        for (let f in obj) { config[f] = obj[f] }
-    } else {
-        config.msgbox('Configuration config.json incorrecte ou non trouvée dans ' + config.dir, 'Installation défectueuse ?', true)
-    }
-
     config.lockpath = path.join(config.dir, 'lock.txt')
     config.lock = new Date().toUTCString()
     fs.writeFileSync(config.lockpath, config.lock, (err) => { config.msgbox('Impossible d\'accéder au fichier de protection ' + config.dir + 'lock.txt', err.message, true) })

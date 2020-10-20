@@ -90,7 +90,7 @@ Tout ceci selon le statut d'édition de l'article.
         </q-input>
 
         <!-- Catégorie de l'article (courte liste fermée) -->
-        <q-select class="q-gutter-sm shadow-5 input1" v-model="data.categorie" :options="categs" label="Catégorie" />
+        <q-input class="q-gutter-sm shadow-5 input1" v-model="data.categorie" label="Catégorie" />
 
         <!-- Unité(s) ou kg -->
         <div class="q-gutter-sm shadow-5 input1">
@@ -180,7 +180,7 @@ fs.readSyncFile('/etc/passwd', { encoding: 'base64' })
 
 import { clone, eq, colonnes, defVal, decore, maj } from '../app/fichier'
 import { global } from '../app/global'
-import { config } from '../app/config'
+
 const fs = require('fs')
 const Jimp = require('jimp')
 
@@ -192,19 +192,11 @@ export default {
   name: 'FicheArticle',
   mounted() {
     global.ficheArticle = this // Enregistrement de ce composant en global
-    const categories = config.categories || { 'défaut': 'A' }
-    // eslint-disable-next-line no-unused-vars
-    this.categs = [] // liste des catégories traduites (simplifiées) : valeurs du select
-    for (let c in categories) {
-      let x = categories[c]
-      if (this.categs.indexOf(x) === -1) this.categs.push(x)
-    }
   },
   data () {
     return {
       /* Les initulés des statuts 0 1 2 3 4 */
       labelStatus: ['inchangé', 'créé', 'modifié', 'supprimé', 'créé puis supprimé'],
-      categs: [], // liste des catégories traduites (simplifiées) : valeurs du select
       fichier: null, // Objet fichier dont l'article fait partie
       max: 0, // nombre d'articles dans la sélection filtrée de App.vue. Avec pos, permlet de savoir si l'article est le dernier ou non (suivant possible ou non)
       ficheArticle: false, // model pilotant l'ouverture de la ficheArticle elle-même

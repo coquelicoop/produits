@@ -62,11 +62,6 @@ App.vue a la strucyure suivante :
             <q-item-section avatar><q-icon class="menuButton" :name="'today'"/></q-item-section>
             <q-item-section class="menuText primary">En service actuellement</q-item-section>
           </q-item>
-          <!-- Création d'un nouveau fichier chargé des produits importés depuis ODOO -->
-          <q-item clickable class="bg-grey-1" v-ripple @click="panneauGauche = false;ouvrirODOO()">
-            <q-item-section avatar><q-icon class="menuButton" :name="'cloud_download'"/></q-item-section>
-            <q-item-section class="menuText">Importer depuis ODOO</q-item-section>
-          </q-item>
           <!-- Importation d'un fichier CSV local dont le nom sera pris comme nom de modèle-->
           <q-item clickable class="bg-grey-1" v-ripple @click="fichierlocal = true;fichierImport = null;panneauGauche = false">
             <q-item-section avatar><q-icon class="menuButton" :name="'add_box'"/></q-item-section>
@@ -279,7 +274,6 @@ App.vue a la strucyure suivante :
 </template>
 
 <script>
-import { getArticles } from './app/importodoo'
 import { global, b64u, removeDiacritics } from './app/global'
 import { config } from './app/config'
 import { Fichier, listeArchMod, copieFichier, colonnes, defVal, decore } from './app/fichier'
@@ -577,19 +571,6 @@ export default {
     // Création du fichier et lecture d'une source d'articles vide
     async nouveauFichier () {
       await this.ouvrirFichier('$N', false, [])
-    },
-
-    // Obtention de la liste des articles depuis ODOO
-    async ouvrirODOO () {
-      if (await this.verifOuverture()) {
-        try {
-          this.chargement = true
-          const source = await getArticles()
-          await this.ouvrirFichier('$S', false, source)
-        } catch (err) {
-          this.erreur('L\'importation des articles depuis ODOO a échoué.\n', err.message)
-        }
-      }
     },
 
     /*

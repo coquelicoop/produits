@@ -1,6 +1,6 @@
 {
   "name": "produits",
-  "version": "0.0.11",
+  "version": "1.0.1",
   "description": "Catalogue des produits à peser et son édition",
   "productName": "produits",
   "cordovaId": "",
@@ -18,11 +18,10 @@
     "csv-writer": "^1.6.0",
     "electron-rebuild": "^1.0.0",
     "jimp": "^0.9.3",
-    "odoo": "file:/C:/git/odoo-0.4.2.tgz",
     "quasar": "^1.8.5"
   },
   "devDependencies": {
-    "@quasar/app": "^1.0.0",
+    "@quasar/app": "^1.9.6",
     "@vue/eslint-config-standard": "^4.0.0",
     "babel-eslint": "^10.0.1",
     "devtron": "^1.4.0",
