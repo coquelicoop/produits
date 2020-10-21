@@ -10,14 +10,13 @@ La méthode quit() de config sort de l'application.
 La méthode msgbox affiche un message modal et sort ou non de l'application.
 */
 
-const path = require('path')
-const fs = require('fs')
-const remote = require('electron').remote
+import path from 'path'
+import fs from 'fs'
+import { remote } from 'electron'
 
 class Config {
     quit () {
         remote.app.quit()
-       // remote.BrowserWindow.getFocusedWindow().close()
     }
     msgbox (message, detail, quit) {
         remote.dialog.showMessageBoxSync({ type: 'error', buttons: ['Lu'], message: message, detail: detail })
