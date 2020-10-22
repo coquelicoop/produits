@@ -276,7 +276,7 @@ App.vue a la strucyure suivante :
 <script>
 import { global, b64u, removeDiacritics } from './app/global'
 import { config } from './app/config'
-import { Fichier, listeArchMod, copieFichier, colonnes, defVal, decore } from './app/fichier'
+import { checkDirs, Fichier, listeArchMod, copieFichier, colonnes, defVal, decore } from './app/fichier'
 import CarteArticle from './components/CarteArticle.vue'
 import FicheArticle from './components/FicheArticle.vue'
 
@@ -314,6 +314,12 @@ export default {
   */
   async mounted() {
     global.appVue = this
+
+    const e = checkDirs()
+    if (e) {
+      config.msgbox('Erreur fatale d\'installation', e, true)
+    }
+
     this.fichier = new Fichier()
     try {
       this.chargement = true

@@ -20,8 +20,9 @@ calculées depuis la ligne du fichier CSV:
 import { config } from './config'
 import { removeDiacritics, editEAN, formatPrix, dateHeure, centimes, nChiffres, codeCourtDeId } from './global'
 const csv = require('csv-parser')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
+
 const createCsvStringifier = require('csv-writer').createObjectCsvStringifier
 const Jimp = require('jimp')
 
@@ -64,6 +65,16 @@ const header = [
     { id: 'unite', title: 'unite' },
     { id: 'image', title: 'image' }
 ]
+
+export function checkDirs() {
+    try {
+        fs.ensureDirSync(archivesPath)
+        fs.ensureDirSync(modelesPath)
+        return null
+    } catch (e) {
+        return e.message
+    }
+}
 
 // liste des articles actuellement mis à disposition des bamlances. Change à chaque mise en service explicite
 let reference = []

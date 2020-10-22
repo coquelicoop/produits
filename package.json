@@ -17,6 +17,7 @@
     "core-js": "^3.6.5",
     "csv-parser": "^2.3.2",
     "csv-writer": "^1.6.0",
+    "fs-extra": "^9.0.1",
     "jimp": "^0.9.3",
     "quasar": "^1.8.5"
   },
